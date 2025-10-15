@@ -3,54 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blue Button Page</title>
+    <title>Product Sales Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <style>
-        /* General body styling for centering */
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f4f4f9;
-            font-family: Arial, sans-serif;
+            padding: 2rem;
+            background-color: #f8f9fa;
         }
-
-        /* Button styling */
-        .blue-button {
-            background-color: #007bff; /* A nice shade of blue */
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s ease, transform 0.2s ease;
+        .container {
+            max-width: 800px;
         }
-
-        /* Hover effect for the button */
-        .blue-button:hover {
-            background-color: #0056b3; /* A darker blue on hover */
-            transform: translateY(-2px);
-        }
-
-        /* Active (click) effect for the button */
-        .blue-button:active {
-            background-color: #004494;
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        .card-title {
+            color: #6c757d;
         }
     </style>
 </head>
 <body>
-
-    <button class="blue-button">Final Test OK</button>
+    <div class="container">
+        <h1 class="mb-4">Product Sales Summary</h1>
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title text-uppercase">Total Sales</h5>
+                <p class="card-text fs-2 fw-bold text-success">$<span id="total-sales">0.00</span></p>
+            </div>
+        </div>
+        <div class="card shadow-sm">
+            <div class="card-body">
+                 <h5 class="card-title mb-3">Sales by Product</h5>
+                <table class="table table-striped table-hover" id="product-sales">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Product</th>
+                            <th>Total Sales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Product sales data will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // No JavaScript functionality is required for this brief.
-        // The script tag is included as per the instructions.
+        document.addEventListener('DOMContentLoaded', function() {
+            const csvData = `product,region,sales
+Widget A,North,150.50
+Widget B,South,220.00
+Widget A,North,75.25`;
+
+            const tableBody = document.querySelector('#product-sales tbody');
+            const totalSalesElement = document.getElementById('total-sales');
+
+            // 1. Parse CSV and aggregate data
+            const lines = csvData.trim().split('\n');
+            const header = lines.shift(); // Remove header
+
+            const productSales = {};
+            let grandTotal = 0;
+
+            lines.forEach(line => {
+                const [product, region, salesStr] = line.split(',');
+                const sales = parseFloat(salesStr);
+                if (!isNaN(sales)) {
+                    if (productSales[product]) {
+                        productSales[product] += sales;
+                    } else {
+                        productSales[product] = sales;
+                    }
+                    grandTotal += sales;
+                }
+            });
+
+            // 2. Populate the Bootstrap table
+            tableBody.innerHTML = ''; // Clear any existing content
+
+            const sortedProducts = Object.keys(productSales).sort();
+
+            sortedProducts.forEach(productName => {
+                const total = productSales[productName];
+                const row = document.createElement('tr');
+                
+                const productCell = document.createElement('td');
+                productCell.textContent = productName;
+                
+                const salesCell = document.createElement('td');
+                salesCell.textContent = `$${total.toFixed(2)}`;
+                
+                row.appendChild(productCell);
+                row.appendChild(salesCell);
+                
+                tableBody.appendChild(row);
+            });
+
+            // 3. Update the total sales element after the table renders
+            totalSalesElement.textContent = grandTotal.toFixed(2);
+        });
     </script>
 </body>
 </html>
